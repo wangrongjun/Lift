@@ -9,13 +9,17 @@ import java.util.List;
 public class Lift {
 
     public enum State {
-        stop, rising, falling;
+        stop,//因为没有乘客，电梯不运行，一般停在最低层，但不强制要求
+        rising,//处于上升状态
+        falling//处于下降状态
     }
 
     private State state;
-
+    /**
+     * 从0到floorNumber-1
+     */
     private int currentFloor;
-    private int maxFloor;
+    private int floorNumber;
     /**
      * 在每一层的电梯门口等待的乘客
      */
@@ -25,13 +29,13 @@ public class Lift {
      */
     private List<Passenger> takingPassengerList;
 
-    public Lift(int maxFloor) {
-        this.maxFloor = maxFloor;
+    public Lift(int floorNumber) {
+        this.floorNumber = floorNumber;
         state = Lift.State.stop;
         currentFloor = 0;
         takingPassengerList = new ArrayList<>();
         waitingPassengerList = new ArrayList<>();
-        for (int i = 0; i < maxFloor; i++) {
+        for (int i = 0; i < floorNumber; i++) {
             waitingPassengerList.add(new ArrayList<Passenger>());
         }
     }
@@ -56,8 +60,8 @@ public class Lift {
         this.currentFloor = currentFloor;
     }
 
-    public int getMaxFloor() {
-        return maxFloor;
+    public int getFloorNumber() {
+        return floorNumber;
     }
 
     public void setWaitingPassengerList(List<List<Passenger>> waitingPassengerList) {
@@ -68,8 +72,8 @@ public class Lift {
         this.takingPassengerList = takingPassengerList;
     }
 
-    public void setMaxFloor(int maxFloor) {
-        this.maxFloor = maxFloor;
+    public void setFloorNumber(int floorNumber) {
+        this.floorNumber = floorNumber;
     }
 
     public List<Passenger> getTakingPassengerList() {

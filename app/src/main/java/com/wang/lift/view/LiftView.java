@@ -5,6 +5,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
+import android.graphics.PorterDuff;
 import android.util.AttributeSet;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -56,9 +57,9 @@ public class LiftView extends SurfaceView {
         paint.setColor(Color.BLACK);
 
         //画楼层编号和间隔线，楼层的高为1/maxFloor
-        int maxFloor = lift.getMaxFloor();
-        for (int i = 0; i < maxFloor; i++) {
-            double scale = i * 1.0 / maxFloor;
+        int floorNumber = lift.getFloorNumber();
+        for (int i = 0; i < floorNumber; i++) {
+            double scale = i * 1.0 / floorNumber;
             canvas.drawLine(x(0), y(scale), x(1), y(scale), paint);
             canvas.drawText(i + "楼", x(0.03), y(scale + 0.05), paint);
         }
@@ -66,8 +67,9 @@ public class LiftView extends SurfaceView {
         //画电梯，电梯的y轴高1/maxFloor，x轴从0.1到0.6
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.RED);
-        double liftTop = lift.getCurrentFloor() * 1.0 / maxFloor;
-        double liftBottom = (lift.getCurrentFloor() + 1) * 1.0 / maxFloor;
+        paint.setStrokeWidth(3f);
+        double liftTop = lift.getCurrentFloor() * 1.0 / floorNumber;
+        double liftBottom = (lift.getCurrentFloor() + 1) * 1.0 / floorNumber;
         double liftLeft = 0.1;
         double liftRight = 0.6;
         canvas.drawRect(x(liftLeft), y(liftTop), x(liftRight), y(liftBottom), paint);
@@ -92,13 +94,12 @@ public class LiftView extends SurfaceView {
         }
 
         //画每个楼层等待电梯的人
-
         List<List<Passenger>> waitingPassengerList = lift.getWaitingPassengerList();
         for (int i = 0; i < waitingPassengerList.size(); i++) {
 
             List<Passenger> passengerList = waitingPassengerList.get(i);//某一层正在等待乘客列表
             double doorLeft = liftRight;
-            double doorTop = i * 1.0 / maxFloor;
+            double doorTop = i * 1.0 / floorNumber;
 
             for (int j = 0; j < passengerList.size(); j++) {
                 String toFloor = passengerList.get(j).getToFloor() + "";
@@ -116,19 +117,32 @@ public class LiftView extends SurfaceView {
 
     }
 
+    public void setLift(Lift lift) {
+        this.lift = lift;
+
+        clearCanvas();
+
+        Canvas canvas = getHolder().lockCanvas();
+        drawLift(canvas);
+        getHolder().unlockCanvasAndPost(canvas);
+    }
+
+    private void clearCanvas() {
+        Canvas canvas = getHolder().lockCanvas();
+        canvas.drawColor(Color.WHITE);
+        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.SRC);
+        getHolder().unlockCanvasAndPost(canvas);
+
+        canvas = getHolder().lockCanvas();
+        getHolder().unlockCanvasAndPost(canvas);
+    }
+
     private int x(double scale) {
         return (int) (getMeasuredWidth() * scale);
     }
 
     private int y(double scale) {
         return (int) (getMeasuredHeight() * scale);
-    }
-
-    public void setLift(Lift lift) {
-        this.lift = lift;
-        Canvas canvas = getHolder().lockCanvas();
-        drawLift(canvas);
-        getHolder().unlockCanvasAndPost(canvas);
     }
 
 }
