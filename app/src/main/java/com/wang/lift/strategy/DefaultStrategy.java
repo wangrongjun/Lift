@@ -43,4 +43,8 @@ public abstract class DefaultStrategy implements Strategy {
         return have;
     }
 
+    protected boolean haveTakingPassenger(Lift lift) {
+        return lift.getTakingPassengerList().size() != 0;
+    }
+
 }

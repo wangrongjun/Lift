@@ -17,6 +17,9 @@ public class SillyStrategy extends DefaultStrategy {
                 if (haveWaitingPassenger(lift, 0, floorNumber - 1)) {
                     lift.setCurrentFloor(currentFloor + 1);
                     lift.setState(Lift.State.rising);
+                } else if (haveTakingPassenger(lift)) {
+                    lift.setCurrentFloor(currentFloor + 1);
+                    lift.setState(Lift.State.rising);
                 }
                 break;
             case rising:
@@ -28,8 +31,8 @@ public class SillyStrategy extends DefaultStrategy {
                 }
                 break;
             case falling:
-                if (currentFloor == 0) {
-                    if (haveWaitingPassenger(lift, 0, floorNumber - 1)) {
+                if (currentFloor == 0) {//此时必须保证0层没有人要出去或进来
+                    if (haveWaitingPassenger(lift, 1, floorNumber - 1) || haveTakingPassenger(lift)) {
                         lift.setCurrentFloor(currentFloor + 1);
                         lift.setState(Lift.State.rising);
                     } else {

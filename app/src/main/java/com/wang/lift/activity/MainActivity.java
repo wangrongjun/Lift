@@ -1,10 +1,9 @@
 package com.wang.lift.activity;
 
-import android.content.Intent;
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -23,17 +22,26 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
 
     @Bind(R.id.lift_view)
     LiftView liftView;
     @Bind(R.id.ll_btn_add)
     LinearLayout llBtnAdd;
-    @Bind(R.id.btn_run)
+    @Bind(R.id.btn_run_or_pause)
     Button btnRun;
+    @Bind(R.id.btn_speed)
+    Button btnSpeed;
 
     private Lift lift;
-    private static int floorNumber = 8;//只在改变楼层数后需要重启时用到
+    /**
+     * 子线程结束的判断条件
+     */
+    private boolean canRun = false;
+    /**
+     * 电梯运行速度，即子线程沉睡时间。1为1秒，2为0.5秒，4为0.25秒，以此类推，sleepTime=1000/speed
+     */
+    private int speed = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,14 +49,32 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        lift = new Lift(floorNumber);
+        lift = new Lift(8);
+        initSpeed();
         updateAddButton();
         showLiftDelay();
+    }
+
+    private void initSpeed() {
+        speed = 1;
+        btnSpeed.setText("慢");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopRun();
     }
 
     private int fromFloor = -1;
 
     private void updateAddButton() {
+
+        for (int i = 0; i < llBtnAdd.getChildCount(); i++) {//先清空已存在的按钮
+            llBtnAdd.removeView(llBtnAdd.getChildAt(i));
+            i--;
+        }
+
         for (int i = 0; i < lift.getFloorNumber(); i++) {
             final ImageView imageView = new ImageView(this);
             imageView.setImageResource(android.R.drawable.ic_input_add);
@@ -124,25 +150,41 @@ public class MainActivity extends AppCompatActivity {
         liftView.setLift(lift);
     }*/
 
-    @OnClick({R.id.btn_run, R.id.btn_restore, R.id.btn_floor_number})
+    @OnClick({R.id.btn_run_or_pause, R.id.btn_restore, R.id.btn_floor_number, R.id.btn_speed})
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.btn_run:
-                btnRun.setClickable(false);
+            case R.id.btn_run_or_pause:
                 startRun();
                 break;
             case R.id.btn_restore:
-                restore();
+                stopRun();
+                lift = new Lift(lift.getFloorNumber());
+                liftView.setLift(lift);
                 break;
             case R.id.btn_floor_number:
                 changeFloorNumber();
                 break;
+            case R.id.btn_speed:
+                changeSpeed();
+                break;
         }
     }
 
-    private void restore() {
-        finish();
-        startActivity(new Intent(this, MainActivity.class));
+    private void changeSpeed() {
+        switch (speed) {
+            case 1:
+                speed = 2;
+                btnSpeed.setText("中");
+                break;
+            case 2:
+                speed = 3;
+                btnSpeed.setText("快");
+                break;
+            case 3:
+                speed = 1;
+                btnSpeed.setText("慢");
+                break;
+        }
     }
 
     private void changeFloorNumber() {
@@ -153,8 +195,10 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     int i = Integer.parseInt(text);
                     if (i > 0) {
-                        floorNumber = i;
-                        restore();
+                        stopRun();
+                        lift = new Lift(i);
+                        liftView.setLift(lift);
+                        updateAddButton();
                         return;
                     }
                 } catch (NumberFormatException ignored) {
@@ -164,7 +208,30 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void startRun() {
+    private void startRun() {
+        canRun = true;
+        runLift();
+        btnRun.setText("暂停");
+        btnRun.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                stopRun();
+            }
+        });
+    }
+
+    private void stopRun() {
+        canRun = false;
+        btnRun.setText("运行");
+        btnRun.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startRun();
+            }
+        });
+    }
+
+    public void runLift() {
         final Handler handler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
@@ -182,23 +249,28 @@ public class MainActivity extends AppCompatActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while (true) {
+                while (canRun) {
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep((long) (1000 / speed));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+                    if (!canRun) {
+                        return;
+                    }
                     handler.sendEmptyMessage(0);
                     try {
-                        Thread.sleep(1000);
+                        Thread.sleep((long) (1000 / speed));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
+                    }
+                    if (!canRun) {
+                        return;
                     }
                     handler.sendEmptyMessage(1);
                 }
             }
         }).start();
-
 
     }
 

@@ -10,22 +10,32 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btn_run"
-            android:layout_width="wrap_content"
+            android:id="@+id/btn_run_or_pause"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="开始运行" />
+            android:layout_weight="1"
+            android:text="运行" />
 
         <Button
             android:id="@+id/btn_restore"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="还原" />
 
         <Button
             android:id="@+id/btn_floor_number"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="楼层数" />
+
+        <Button
+            android:id="@+id/btn_speed"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="速度" />
 
     </LinearLayout>
 
