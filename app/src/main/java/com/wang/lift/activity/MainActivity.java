@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 
 import com.wang.android_lib.util.DialogUtil;
 import com.wang.android_lib.util.M;
+import com.wang.java_util.MathUtil;
 import com.wang.lift.R;
 import com.wang.lift.bean.Lift;
 import com.wang.lift.bean.Passenger;
@@ -32,6 +33,8 @@ public class MainActivity extends Activity {
     Button btnRun;
     @Bind(R.id.btn_speed)
     Button btnSpeed;
+    @Bind(R.id.btn_random)
+    Button btnRandom;
 
     private Lift lift;
     /**
@@ -42,6 +45,10 @@ public class MainActivity extends Activity {
      * 电梯运行速度，即子线程沉睡时间。1为1秒，2为0.5秒，4为0.25秒，以此类推，sleepTime=1000/speed
      */
     private int speed = 1;
+    /**
+     * 是否需要生成随机乘客
+     */
+    private boolean canCreateRandomPassenger = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,7 +157,7 @@ public class MainActivity extends Activity {
         liftView.setLift(lift);
     }*/
 
-    @OnClick({R.id.btn_run_or_pause, R.id.btn_restore, R.id.btn_floor_number, R.id.btn_speed, R.id.btn_strategy})
+    @OnClick({R.id.btn_run_or_pause, R.id.btn_restore, R.id.btn_floor_number, R.id.btn_speed, R.id.btn_strategy, R.id.btn_random})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_run_or_pause:
@@ -169,6 +176,19 @@ public class MainActivity extends Activity {
                 break;
             case R.id.btn_strategy:
                 break;
+            case R.id.btn_random:
+                toggleRandom();
+                break;
+        }
+    }
+
+    private void toggleRandom() {
+        if (canCreateRandomPassenger) {
+            canCreateRandomPassenger = false;
+            btnRandom.setText("生成乘客");
+        } else {
+            canCreateRandomPassenger = true;
+            btnRandom.setText("不生成");
         }
     }
 
@@ -241,8 +261,19 @@ public class MainActivity extends Activity {
                 UpAndDownStrategy strategy = new UpAndDownStrategy(lift.getFloorNumber() / 2);
                 if (msg.what == 0) {
                     strategy.updateCurrentFloorPassenger(lift);
-                } else {
+                } else if (msg.what == 1) {
                     strategy.moveLift(lift);
+                } else {
+                    int from;
+                    int to;
+                    do {
+                        from = MathUtil.random(0, lift.getFloorNumber() - 1);
+                    } while (from == lift.getCurrentFloor());
+                    do {
+                        to = MathUtil.random(0, lift.getFloorNumber() - 1);
+                    } while (to == from);
+                    Passenger passenger = new Passenger(from, to, 0);
+                    lift.getWaitingPassengerList().get(from).add(passenger);
                 }
                 liftView.setLift(lift);
                 return true;
@@ -253,6 +284,9 @@ public class MainActivity extends Activity {
             @Override
             public void run() {
                 while (canRun) {
+                    if (canCreateRandomPassenger) {
+                        handler.sendEmptyMessage(2);
+                    }
                     try {
                         Thread.sleep((long) (1000 / speed));
                     } catch (InterruptedException e) {
