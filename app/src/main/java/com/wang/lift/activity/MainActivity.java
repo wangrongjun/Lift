@@ -237,7 +237,8 @@ public class MainActivity extends Activity {
         final Handler handler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
-                UpAndDownStrategy strategy = new UpAndDownStrategy();
+//                SillyStrategy strategy = new SillyStrategy();
+                UpAndDownStrategy strategy = new UpAndDownStrategy(lift.getFloorNumber() / 2);
                 if (msg.what == 0) {
                     strategy.updateCurrentFloorPassenger(lift);
                 } else {

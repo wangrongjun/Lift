@@ -34,12 +34,37 @@ public abstract class DefaultStrategy implements Strategy {
     }
 
     /**
-     * 在楼层beginFloor到楼层endFloor之间，是否有人在等电梯。
-     * 要求：beginFloor < endFloor
+     * 上方是否有人在等电梯
      */
-    public boolean haveWaitingPassenger(Lift lift, int beginFloor, int endFloor) {
+    public boolean haveWaitingPassengerOnTop(Lift lift) {
         boolean have = false;
-        for (int i = beginFloor; i <= endFloor; i++) {
+        for (int i = lift.getCurrentFloor() + 1; i < lift.getFloorNumber(); i++) {
+            if (lift.getWaitingPassengerList().get(i).size() != 0) {
+                have = true;
+            }
+        }
+        return have;
+    }
+
+    /**
+     * 下方是否有人在等电梯
+     */
+    public boolean haveWaitingPassengerOnDown(Lift lift) {
+        boolean have = false;
+        for (int i = 0; i < lift.getCurrentFloor(); i++) {
+            if (lift.getWaitingPassengerList().get(i).size() != 0) {
+                have = true;
+            }
+        }
+        return have;
+    }
+
+    /**
+     * 是否有人在等电梯
+     */
+    public boolean haveWaitingPassenger(Lift lift) {
+        boolean have = false;
+        for (int i = 0; i < lift.getFloorNumber(); i++) {
             if (lift.getWaitingPassengerList().get(i).size() != 0) {
                 have = true;
             }
@@ -88,20 +113,6 @@ public abstract class DefaultStrategy implements Strategy {
             }
         }
         return have;
-    }
-
-    /**
-     * 是否在顶层
-     */
-    public boolean inTop(Lift lift) {
-        return lift.getCurrentFloor() == lift.getFloorNumber() - 1;
-    }
-
-    /**
-     * 是否在底层
-     */
-    public boolean inBottom(Lift lift) {
-        return lift.getCurrentFloor() == 0;
     }
 
 }
