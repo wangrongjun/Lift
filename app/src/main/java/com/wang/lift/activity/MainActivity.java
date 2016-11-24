@@ -15,7 +15,7 @@ import com.wang.android_lib.util.M;
 import com.wang.lift.R;
 import com.wang.lift.bean.Lift;
 import com.wang.lift.bean.Passenger;
-import com.wang.lift.strategy.SillyStrategy;
+import com.wang.lift.strategy.UpAndDownStrategy;
 import com.wang.lift.view.LiftView;
 
 import butterknife.Bind;
@@ -150,7 +150,7 @@ public class MainActivity extends Activity {
         liftView.setLift(lift);
     }*/
 
-    @OnClick({R.id.btn_run_or_pause, R.id.btn_restore, R.id.btn_floor_number, R.id.btn_speed})
+    @OnClick({R.id.btn_run_or_pause, R.id.btn_restore, R.id.btn_floor_number, R.id.btn_speed, R.id.btn_strategy})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.btn_run_or_pause:
@@ -166,6 +166,8 @@ public class MainActivity extends Activity {
                 break;
             case R.id.btn_speed:
                 changeSpeed();
+                break;
+            case R.id.btn_strategy:
                 break;
         }
     }
@@ -235,7 +237,7 @@ public class MainActivity extends Activity {
         final Handler handler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
-                SillyStrategy strategy = new SillyStrategy();
+                UpAndDownStrategy strategy = new UpAndDownStrategy();
                 if (msg.what == 0) {
                     strategy.updateCurrentFloorPassenger(lift);
                 } else {

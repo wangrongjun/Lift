@@ -28,7 +28,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="楼层数" />
+            android:text="层数" />
 
         <Button
             android:id="@+id/btn_speed"
@@ -36,6 +36,13 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="速度" />
+
+        <Button
+            android:id="@+id/btn_strategy"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="策略" />
 
     </LinearLayout>
 
