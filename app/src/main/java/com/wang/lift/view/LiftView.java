@@ -6,8 +6,8 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.util.AttributeSet;
-import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import com.wang.lift.bean.Lift;
@@ -24,27 +24,9 @@ public class LiftView extends SurfaceView {
 
     public LiftView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        getHolder().addCallback(callback);
         setZOrderOnTop(true);//设置画布  背景透明
-        getHolder().setFormat(PixelFormat.TRANSLUCENT);
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);//设置画布  背景透明
     }
-
-    private SurfaceHolder.Callback callback = new SurfaceHolder.Callback() {
-        @Override
-        public void surfaceCreated(SurfaceHolder holder) {
-
-        }
-
-        @Override
-        public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
-
-        }
-
-        @Override
-        public void surfaceDestroyed(SurfaceHolder holder) {
-
-        }
-    };
 
     private void drawLift(Canvas canvas) {
 
@@ -120,20 +102,11 @@ public class LiftView extends SurfaceView {
     public void setLift(Lift lift) {
         this.lift = lift;
 
-        clearCanvas();
-
         Canvas canvas = getHolder().lockCanvas();
+        Paint paint = new Paint();
+        paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));//先清空之前的内容
+        canvas.drawPaint(paint);
         drawLift(canvas);
-        getHolder().unlockCanvasAndPost(canvas);
-    }
-
-    private void clearCanvas() {
-        Canvas canvas = getHolder().lockCanvas();
-        canvas.drawColor(Color.WHITE);
-        canvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.SRC);
-        getHolder().unlockCanvasAndPost(canvas);
-
-        canvas = getHolder().lockCanvas();
         getHolder().unlockCanvasAndPost(canvas);
     }
 

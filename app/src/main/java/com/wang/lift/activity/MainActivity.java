@@ -16,6 +16,8 @@ import com.wang.java_util.MathUtil;
 import com.wang.lift.R;
 import com.wang.lift.bean.Lift;
 import com.wang.lift.bean.Passenger;
+import com.wang.lift.strategy.SillyStrategy;
+import com.wang.lift.strategy.Strategy;
 import com.wang.lift.strategy.UpAndDownStrategy;
 import com.wang.lift.view.LiftView;
 
@@ -35,6 +37,8 @@ public class MainActivity extends Activity {
     Button btnSpeed;
     @Bind(R.id.btn_random)
     Button btnRandom;
+    @Bind(R.id.btn_strategy)
+    Button btnStrategy;
 
     private Lift lift;
     /**
@@ -49,6 +53,10 @@ public class MainActivity extends Activity {
      * 是否需要生成随机乘客
      */
     private boolean canCreateRandomPassenger = false;
+    /**
+     * 电梯调度策略
+     */
+    private Strategy strategy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +66,7 @@ public class MainActivity extends Activity {
 
         lift = new Lift(8);
         initSpeed();
+        initStrategy();
         updateAddButton();
         showLiftDelay();
     }
@@ -65,6 +74,11 @@ public class MainActivity extends Activity {
     private void initSpeed() {
         speed = 1;
         btnSpeed.setText("慢");
+    }
+
+    private void initStrategy() {
+        btnStrategy.setText("智能移动策略");
+        strategy = new UpAndDownStrategy(0);
     }
 
     @Override
@@ -135,27 +149,6 @@ public class MainActivity extends Activity {
             liftView.setLift(lift);
         }
     }
-/*
-    private void showLift() {
-        Lift lift = new Lift(8);
-
-        lift.setCurrentFloor(4);
-
-        List<Passenger> takingPassengerList = lift.getTakingPassengerList();
-        for (int i = 1; i <= 5; i++) {
-            takingPassengerList.add(new Passenger(0, i, 0));
-        }
-
-        List<List<Passenger>> waitingPassengerList = lift.getWaitingPassengerList();
-        for (int i = 0; i < waitingPassengerList.size(); i++) {
-            List<Passenger> passengerList = waitingPassengerList.get(i);
-            for (int j = 1; j <= 5; j++) {
-                passengerList.add(new Passenger(0, j, 0));
-            }
-        }
-
-        liftView.setLift(lift);
-    }*/
 
     @OnClick({R.id.btn_run_or_pause, R.id.btn_restore, R.id.btn_floor_number, R.id.btn_speed, R.id.btn_strategy, R.id.btn_random})
     public void onClick(View view) {
@@ -175,6 +168,8 @@ public class MainActivity extends Activity {
                 changeSpeed();
                 break;
             case R.id.btn_strategy:
+                stopRun();
+                changeStrategy();
                 break;
             case R.id.btn_random:
                 toggleRandom();
@@ -185,11 +180,26 @@ public class MainActivity extends Activity {
     private void toggleRandom() {
         if (canCreateRandomPassenger) {
             canCreateRandomPassenger = false;
-            btnRandom.setText("生成乘客");
+            btnRandom.setText("随机生成乘客");
         } else {
             canCreateRandomPassenger = true;
-            btnRandom.setText("不生成");
+            btnRandom.setText("不生成乘客");
         }
+    }
+
+    private void changeStrategy() {
+        String hint;
+        if (strategy instanceof SillyStrategy) {
+            btnStrategy.setText("智能移动策略");
+            strategy = new SillyStrategy();
+            hint = "电梯调度策略已更改为智能移动策略。电梯会根据等待乘客和电梯内乘客的目的" +
+                    "楼层选择合理的移动方向。这是现代一般电梯运行的策略";
+        } else {
+            btnStrategy.setText("完全移动策略");
+            strategy = new UpAndDownStrategy(0);
+            hint = "电梯调度策略已更改为完全移动策略。电梯仅会从楼底到楼顶，再从楼顶到楼底来回移动。";
+        }
+        DialogUtil.showConfirmDialog(this, "更改电梯调度策略", hint, null);
     }
 
     private void changeSpeed() {
@@ -257,8 +267,6 @@ public class MainActivity extends Activity {
         final Handler handler = new Handler(new Handler.Callback() {
             @Override
             public boolean handleMessage(Message msg) {
-//                SillyStrategy strategy = new SillyStrategy();
-                UpAndDownStrategy strategy = new UpAndDownStrategy(lift.getFloorNumber() / 2);
                 if (msg.what == 0) {
                     strategy.updateCurrentFloorPassenger(lift);
                 } else if (msg.what == 1) {
