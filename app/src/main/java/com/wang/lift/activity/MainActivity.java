@@ -191,12 +191,12 @@ public class MainActivity extends Activity {
         String hint;
         if (strategy instanceof SillyStrategy) {
             btnStrategy.setText("智能移动策略");
-            strategy = new SillyStrategy();
+            strategy = new UpAndDownStrategy(0);
             hint = "电梯调度策略已更改为智能移动策略。电梯会根据等待乘客和电梯内乘客的目的" +
                     "楼层选择合理的移动方向。这是现代一般电梯运行的策略";
         } else {
             btnStrategy.setText("完全移动策略");
-            strategy = new UpAndDownStrategy(0);
+            strategy = new SillyStrategy();
             hint = "电梯调度策略已更改为完全移动策略。电梯仅会从楼底到楼顶，再从楼顶到楼底来回移动。";
         }
         DialogUtil.showConfirmDialog(this, "更改电梯调度策略", hint, null);
